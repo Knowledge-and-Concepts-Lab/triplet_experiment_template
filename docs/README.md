@@ -4,4 +4,4 @@ This folder contains usage guides and examples for the triplet experiment templa
 
 ## Contents
 
-Documentation will be added here as features are developed.
+- [How to Set Up and Run a New Experiment](how-to-new-experiment.md)

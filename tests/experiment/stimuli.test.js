@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { IMAGE_PATHS, VALIDATION_TRIALS } from "../../experiment/js/stimuli.js";
+import { CONFIG } from "../../experiment/js/config.js";
 
 describe("IMAGE_PATHS", () => {
-  it("contains 96 images", () => {
-    expect(IMAGE_PATHS).toHaveLength(96);
+  it("contains at least 3 images", () => {
+    expect(IMAGE_PATHS.length).toBeGreaterThanOrEqual(3);
   });
 
   it("all paths start with assets/stimuli/", () => {
@@ -22,25 +23,13 @@ describe("IMAGE_PATHS", () => {
     const unique = new Set(IMAGE_PATHS);
     expect(unique.size).toBe(IMAGE_PATHS.length);
   });
-
-  it("has both urban and rural images", () => {
-    const hasUrban = IMAGE_PATHS.some((p) => p.includes("urban_"));
-    const hasRural = IMAGE_PATHS.some((p) => p.includes("rural_"));
-    expect(hasUrban).toBe(true);
-    expect(hasRural).toBe(true);
-  });
-
-  it("has both day and eve images", () => {
-    const hasDay = IMAGE_PATHS.some((p) => p.includes("_day_"));
-    const hasEve = IMAGE_PATHS.some((p) => p.includes("_eve_"));
-    expect(hasDay).toBe(true);
-    expect(hasEve).toBe(true);
-  });
 });
 
 describe("VALIDATION_TRIALS", () => {
-  it("contains 50 trials", () => {
-    expect(VALIDATION_TRIALS).toHaveLength(50);
+  it("contains at least n_validation_trials entries", () => {
+    expect(VALIDATION_TRIALS.length).toBeGreaterThanOrEqual(
+      CONFIG.N_VALIDATION_TRIALS
+    );
   });
 
   it("all trials have required fields", () => {

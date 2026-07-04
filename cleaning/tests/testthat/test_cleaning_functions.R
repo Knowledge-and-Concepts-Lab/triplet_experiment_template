@@ -1,10 +1,8 @@
 library(testthat)
 library(dplyr)
-library(here)
-source(here("R/functions.R"))
 
-# Source the functions under test
-source(file.path(dirname(dirname(dirname(testthat::test_path()))), "R", "functions.R"))
+source(file.path(dirname(dirname(testthat::test_path())), "R", "functions.R"))
+
 
 # ── process_choices ──────────────────────────────────────
 

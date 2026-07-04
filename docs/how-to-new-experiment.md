@@ -228,11 +228,26 @@ Log in to your [jsPsych-Pipe](https://pipe.jspsych.org/) project to download ind
 
 ### Cleaning data
 
-The `cleaning/` directory contains an R pipeline for cleaning raw triplet data:
+There are two ways to run the cleaning pipeline:
+
+**Option A — `tripletTools` package (recommended)**
+
+If you have the `tripletTools` package installed, call `clean_triplet_data()` directly from R:
+
+```r
+library(tripletTools)
+result <- clean_triplet_data(
+  data_dir      = "path/to/downloaded/csvs",
+  output_df     = "cleaned_data.csv",
+  output_levels = "levels.csv"
+)
+```
+
+**Option B — command-line script**
 
 1. Install R dependencies:
    ```r
-   install.packages(c("dplyr", "data.table", "stringr", "readr", "tidyr"))
+   install.packages(c("dplyr", "data.table", "stringr", "readr"))
    ```
 2. Edit `cleaning/R/clean_raw_data.R` and set `data_dir`, `filename_df`, and `filename_level` to point to your downloaded data.
 3. Run:

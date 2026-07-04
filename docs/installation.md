@@ -74,6 +74,17 @@ install.packages(c("dplyr", "data.table", "stringr", "readr", "tidyr", "testthat
 
 This only needs to be done once. Package installation may take a few minutes.
 
+### Install `tripletTools` (recommended)
+
+The cleaning functions are also available as an R package. If you have access to the `tripletTools` package, install it with `devtools`:
+
+```r
+install.packages("devtools")  # if not already installed
+devtools::install("path/to/tripletTools")
+```
+
+Once installed, all cleaning functions are available via `library(tripletTools)` without needing to source any scripts manually.
+
 ---
 
 ## Ruby

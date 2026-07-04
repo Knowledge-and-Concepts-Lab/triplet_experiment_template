@@ -60,8 +60,9 @@ Then open `http://localhost:8000`.
 │   └── generate_experiment.js  # Reads experiment.yaml, writes config.js + stimuli.js
 ├── cleaning/              # R data-cleaning pipeline
 │   └── R/
-│       ├── clean_raw_data.R
-│       └── functions.R
+│       ├── clean_raw_data.R      # Command-line pipeline script
+│       ├── standardize_legacy.R  # Command-line legacy converter script
+│       └── functions.R           # Helper functions (also in tripletTools package)
 ├── tests/                 # JavaScript unit tests (vitest)
 └── docs/                  # This documentation site
 ```

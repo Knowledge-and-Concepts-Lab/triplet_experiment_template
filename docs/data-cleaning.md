@@ -6,14 +6,21 @@ nav_order: 4
 
 # Data Cleaning Reference
 
-The `cleaning/R/` directory contains two scripts:
+The `cleaning/R/` directory contains two scripts and a helper-function library:
 
-| Script | Purpose |
-|--------|---------|
-| `clean_raw_data.R` | Main pipeline — processes raw jsPsych-Pipe CSV exports into a model-ready dataset |
-| `standardize_legacy.R` | Converts older triadic comparison datasets from various column formats into the standard 2025 format |
+| File | Purpose |
+|------|---------|
+| `clean_raw_data.R` | Command-line pipeline — processes raw jsPsych-Pipe CSV exports into a model-ready dataset |
+| `standardize_legacy.R` | Command-line converter — standardises older triadic comparison datasets to the 2025 format |
+| `functions.R` | Shared helper functions used by both scripts |
 
-Both scripts depend on the helper functions defined in `functions.R`.
+The helper functions and pipeline logic are also available as functions in the **`tripletTools`** R package, which is the recommended way to use them from within other R scripts or analyses:
+
+| Package function | Equivalent script |
+|-----------------|-------------------|
+| `tripletTools::clean_triplet_data()` | `clean_raw_data.R` |
+| `tripletTools::clean_triadic_comparisons()` | `standardize_legacy.R` |
+| `tripletTools::filter_incomplete()` etc. | Helper functions in `functions.R` |
 
 ---
 
@@ -48,9 +55,9 @@ Maps each integer index back to its stimulus filename, with one row per unique s
 
 ---
 
-## `clean_raw_data.R` — main pipeline
+## `clean_raw_data.R` — main pipeline script
 
-This script reads all CSV files exported from jsPsych-Pipe, applies the full cleaning pipeline, and writes two output files.
+This script reads all CSV files exported from jsPsych-Pipe, applies the full cleaning pipeline, and writes two output files. It is intended for command-line use. For programmatic use from R, use `tripletTools::clean_triplet_data()` instead — it exposes all settings as function arguments.
 
 ### Configuration
 
@@ -68,15 +75,28 @@ filename_level <- "levels.csv"          # output: stimulus index mapping
 Rscript cleaning/R/clean_raw_data.R
 ```
 
+### Using `tripletTools` instead
+
+```r
+library(tripletTools)
+result <- clean_triplet_data(
+  data_dir      = "path/to/raw/csvs",
+  output_df     = "cleaned_data.csv",
+  output_levels = "levels.csv"
+)
+# result$trials — cleaned trial data frame
+# result$levels — stimulus index mapping
+```
+
 ### What it does, step by step
 
 1. **Reads all CSVs** in `data_dir` and row-binds them into a single data frame.
-2. **Filters for main trials** — keeps only `trial_type == "image-button-response"` rows and drops `trial_index == 3` (which captures early non-trial screens).
+2. **Filters for main trials** — keeps only rows where `trial_category` is `"random"`, `"check"`, or `"validation"`. This field is written by the experiment for both button and keyboard response modes.
 3. **Removes incomplete participants** via [`filter_incomplete`](#filter_incomplete) (default: fewer than 510 trials).
 4. **Removes fast responders** via [`filter_fast_responders`](#filter_fast_responders) (default: log mean RT below log(1000 ms)).
-5. **Cleans stimulus filenames** — strips `resources/` path prefixes, quotes, brackets, and `.png` extensions from the `stimulus` and `choices` columns, then renames `stimulus` to `head`.
+5. **Cleans stimulus filenames** — strips `assets/stimuli/` and `resources/` path prefixes, quotes, brackets, and `.png` extensions from the `stimulus` and `choices` columns, then renames `stimulus` to `head`.
 6. **Splits choices into winner and loser** — uses the `response` column (0 = left choice selected, 1 = right) to determine which option was chosen (`winner`) and which was not (`loser`).
-7. **Labels trial types** via [`assign_sample_alg`](#assign_sample_alg).
+7. **Labels trial types** — renames `trial_category` to `sampleAlg`.
 8. **Removes attention-check failures** via [`filter_failed_catch`](#filter_failed_catch) (default: more than 20% wrong).
 9. **Encodes stimuli as integers** — creates zero-based numeric columns (`head`, `winner`, `loser`) from an alphabetically-sorted factor over all unique stimulus names.
 10. **Assigns train/test splits** via [`assign_sample_sets`](#assign_sample_sets) (default: 80% train, 20% test).
@@ -90,8 +110,21 @@ Use this script when you have triadic comparison data from older or external sou
 
 ### Usage
 
+From the command line after editing the last line of the script:
+
 ```r
 source("cleaning/R/standardize_legacy.R")
+```
+
+Or call the function directly — either by sourcing the script first, or via `tripletTools`:
+
+```r
+# Option A: source the script
+source("cleaning/R/standardize_legacy.R")
+result <- clean_triadic_comparisons("your_dataset.csv")
+
+# Option B: use the tripletTools package
+library(tripletTools)
 result <- clean_triadic_comparisons("your_dataset.csv")
 ```
 
@@ -139,9 +172,18 @@ Reads a single CSV and standardises it to the 2025 column format.
 
 ---
 
-## Helper functions (`functions.R`)
+## Helper functions
 
-Source this file to use the functions in your own scripts or in the R console:
+These functions underpin both cleaning scripts. They are available in two ways:
+
+**Via the `tripletTools` package (recommended):**
+
+```r
+library(tripletTools)
+# functions are available directly: filter_incomplete(), filter_fast_responders(), etc.
+```
+
+**By sourcing `functions.R` directly (no package needed):**
 
 ```r
 source("cleaning/R/functions.R")
@@ -183,6 +225,8 @@ process_choices("[resources/photo.JPEG]", extension = ".JPEG")
 ```r
 assign_sample_alg(d)
 ```
+
+> **Legacy use only.** Data collected with the current experiment template already includes a `trial_category` column (`"random"`, `"check"`, `"validation"`), which `clean_raw_data.R` renames directly to `sampleAlg`. This function is retained for processing older datasets that lack `trial_category` and require re-derivation from the trial structure.
 
 Adds a `sampleAlg` column that labels each trial by how it was generated:
 
@@ -301,7 +345,7 @@ The split is performed **per participant**, so each participant contributes roug
 
 ## Running the tests
 
-The test suite in `cleaning/tests/testthat/test_cleaning_functions.R` covers all five helper functions in `functions.R`.
+The test suite in `cleaning/tests/testthat/test_cleaning_functions.R` covers the helper functions.
 
 ```bash
 Rscript cleaning/tests/run_tests.R
@@ -312,3 +356,5 @@ Or from within an R session:
 ```r
 testthat::test_dir("cleaning/tests/testthat")
 ```
+
+To run tests against the `tripletTools` package versions of the functions, use `devtools::test()` from within the `tripletTools` package directory.

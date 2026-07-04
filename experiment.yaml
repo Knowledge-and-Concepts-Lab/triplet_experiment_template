@@ -1,26 +1,26 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Experiment configuration
+# Experiment configuration template
 # ─────────────────────────────────────────────────────────────────────────────
-# Edit this file, then run:
-#   npm run setup
-# to regenerate experiment/js/config.js and experiment/js/stimuli.js.
-# Do NOT edit those generated files directly.
+# Copy this file into your study directory, edit it, then run:
+#   node scripts/generate_experiment.js my_studies/my_new_study
+# to generate the experiment files for that study.
+# Do NOT edit the generated config.js or stimuli.js directly.
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 # ── Stimuli ──────────────────────────────────────────────────────────────────
-# Path to the stimuli image directory, relative to the project root.
+# Path to the stimuli image directory, relative to your study directory.
 # All image files found here (.png, .jpg, .jpeg, .gif, .bmp, .webp, .svg)
 # will be added to IMAGE_PATHS automatically.
-stimuli_dir: experiment/assets/stimuli
+stimuli_dir: assets/stimuli
 
 # Predefined validation triplets for quality control.
-# Paths are relative to experiment/ (the same root as index.html).
+# Paths are relative to your study directory (the same root as index.html).
 #
 # This field is OPTIONAL. Two modes:
-#   1. Omit validation_trials (or set it to an empty list []) and the setup
-#      script will randomly select n_validation_trials triplets from your
-#      stimuli directory each time you run `npm run setup`.
+#   1. Omit validation_trials (or set it to an empty list []) and the generator
+#      will randomly select n_validation_trials triplets from your stimuli
+#      directory each time you run it.
 #   2. List your triplets explicitly below. You must supply at least
 #      n_validation_trials entries; the experiment samples from them at runtime.
 

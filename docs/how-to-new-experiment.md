@@ -16,11 +16,13 @@ Each trial shows participants three images: one **target** (top) and two **choic
 
 **The workflow for setting up a new experiment is:**
 
-1. Edit `experiment.yaml` — the single source of truth for all settings.
-2. Run `npm run setup` — auto-generates `experiment/js/config.js` and `experiment/js/stimuli.js`.
-3. Test locally, then deploy.
+1. Create a study directory under `my_studies/`.
+2. Copy `experiment.yaml` into it and edit your settings.
+3. Add your stimuli images and consent form.
+4. Run the generator — it copies the shared template files and writes `config.js` and `stimuli.js` into your study directory.
+5. Test locally, then deploy the study directory.
 
-**Never edit `config.js` or `stimuli.js` directly** — they are overwritten every time you run `npm run setup`.
+**Never edit the generated `config.js` or `stimuli.js` directly** — they are overwritten every time you run the generator.
 
 ---
 
@@ -28,45 +30,59 @@ Each trial shows participants three images: one **target** (top) and two **choic
 
 | File | Role |
 |------|------|
-| `experiment.yaml` | **Edit this.** All researcher-facing settings in one place. |
-| `scripts/generate_experiment.js` | Generator script — run via `npm run setup`. |
-| `experiment/js/config.js` | Auto-generated — do not edit. |
-| `experiment/js/stimuli.js` | Auto-generated — do not edit. |
-| `experiment/assets/stimuli/` | Your stimulus image files. |
-| `experiment/assets/consent/` | Your consent form image. |
-| `experiment/index.html` | Experiment structure — only edit if you need to change the demographic questions or overall flow. |
+| `my_studies/<study>/experiment.yaml` | **Edit this.** All researcher-facing settings in one place. |
+| `scripts/generate_experiment.js` | Generator — run it with your study path to build the experiment. |
+| `my_studies/<study>/js/config.js` | Auto-generated — do not edit. |
+| `my_studies/<study>/js/stimuli.js` | Auto-generated — do not edit. |
+| `my_studies/<study>/assets/stimuli/` | Your stimulus image files. |
+| `my_studies/<study>/assets/consent/` | Your consent form image. |
+| `my_studies/<study>/index.html` | Copied from the template by the generator. Only edit the shared template (`experiment/index.html`) if you need to change the demographic questions or overall flow, then re-run the generator to propagate the change. |
 
 ---
 
 ## Step 1: Install dependencies
 
-If you have not already done so:
+If you have not already done so, install the Node dependencies from the repo root:
 
 ```bash
 npm install
 ```
 
-This installs `js-yaml` (used by the generator) and `vitest` (used for tests).
+This only needs to be done **once** — not for each new study.
 
 ---
 
-## Step 2: Prepare your stimuli
+## Step 2: Create your study directory
 
-### 2a. Add your images
+```bash
+mkdir my_studies/my_new_study
+```
 
-Copy all stimulus images into `experiment/assets/stimuli/`. Supported formats: `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.webp`, `.svg`. You need at least 3 images to run the experiment.
+Then copy the template config into it:
+
+```bash
+cp experiment.yaml my_studies/my_new_study/experiment.yaml
+```
+
+---
+
+## Step 3: Prepare your stimuli
+
+### 3a. Add your images
+
+Create `my_studies/my_new_study/assets/stimuli/` and copy your images there. Supported formats: `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.webp`, `.svg`. You need at least 3 images to run the experiment.
 
 The generator scans this directory automatically and sorts files alphabetically — you do not need to list them anywhere.
 
-### 2b. Update `stimuli_dir` in `experiment.yaml`
+### 3b. Set `stimuli_dir` in your `experiment.yaml`
 
 ```yaml
-stimuli_dir: experiment/assets/stimuli
+stimuli_dir: assets/stimuli
 ```
 
-This is already the default. Change it only if you store your images elsewhere (path is relative to the project root).
+In study mode, `stimuli_dir` is relative to your study directory (not the repo root), so `assets/stimuli` points to `my_studies/my_new_study/assets/stimuli/`.
 
-### 2c. Define your validation trials
+### 3c. Define your validation trials
 
 Validation trials are predefined triplets used for quality control (e.g., cross-participant consistency checks). The `validation_trials` field in `experiment.yaml` is **optional**:
 
@@ -95,9 +111,9 @@ validation_trials:
 
 ---
 
-## Step 3: Configure the experiment
+## Step 4: Configure the experiment
 
-All settings live in `experiment.yaml`. The sections below cover the ones you are most likely to change.
+All settings live in your study's `experiment.yaml`. The sections below cover the ones you are most likely to change.
 
 ### Data pipeline (required)
 
@@ -168,28 +184,33 @@ The secret code is only shown when the `workerId` URL parameter is longer than `
 
 ---
 
-## Step 4: Generate the experiment files
+## Step 5: Generate the experiment files
 
-After editing `experiment.yaml`, run:
+After editing your `experiment.yaml`, run the generator with the path to your study directory:
 
 ```bash
-npm run setup
+node scripts/generate_experiment.js my_studies/my_new_study
 ```
 
-This overwrites `experiment/js/config.js` and `experiment/js/stimuli.js`. The script validates your settings before writing and will print a clear error message if something is wrong (mismatched trial counts, missing validation trials, stimuli directory not found, etc.).
+The generator:
+- Copies `index.html` and `js/utils.js` from the shared template into your study directory.
+- Validates your settings and reports any errors (mismatched trial counts, missing validation trials, stimuli directory not found, etc.).
+- Writes `js/config.js` and `js/stimuli.js` into your study directory.
+
+Re-run this command whenever you edit `experiment.yaml` or change your stimuli.
 
 ---
 
-## Step 5: Test locally
+## Step 6: Test locally
 
 The experiment must be served over HTTP — opening `index.html` as a `file://` URL will not work.
 
 ```bash
 # Python (no install needed)
-cd experiment && python -m http.server 8000
+cd my_studies/my_new_study && python -m http.server 8000
 
 # Node.js
-npx serve experiment
+npx serve my_studies/my_new_study
 ```
 
 Open `http://localhost:8000` in your browser.
@@ -197,8 +218,8 @@ Open `http://localhost:8000` in your browser.
 **Testing tips:**
 
 - Add a fake worker ID to skip SONA: `http://localhost:8000?workerId=test1234`
-- For a shorter test session, temporarily reduce `n_random_trials` in `experiment.yaml` (and adjust `n_main_trials` to match), then re-run `npm run setup`.
-- Run the unit test suite to verify utility functions are correct:
+- For a shorter test session, temporarily reduce `n_random_trials` in your `experiment.yaml` (and adjust `n_main_trials` to match), then re-run the generator.
+- Run the unit test suite to verify utility functions are correct (run from the repo root):
 
 ```bash
 npm test
@@ -206,13 +227,13 @@ npm test
 
 ---
 
-## Step 6: Deploy
+## Step 7: Deploy
 
-The experiment is a static site — any static file host works. Common options:
+After running the generator, your study directory is a self-contained static site. Deploy it to any static file host:
 
-- **GitHub Pages** — push the `experiment/` folder to a `gh-pages` branch, or configure Pages to serve from a subdirectory.
-- **Netlify / Vercel** — drag and drop the `experiment/` folder or connect the repository.
-- **University web server** — upload the `experiment/` folder via SFTP.
+- **GitHub Pages** — push the study directory to a `gh-pages` branch, or configure Pages to serve from that subdirectory.
+- **Netlify / Vercel** — drag and drop the study directory or connect a repository containing it.
+- **University web server** — upload the study directory via SFTP.
 
 Ensure the host uses HTTPS, as jsPsych-Pipe requires it.
 
@@ -220,7 +241,7 @@ After deploying, give SONA the URL with the `%SURVEY_CODE%` placeholder appended
 
 ---
 
-## Step 7: Collect and clean data
+## Step 8: Collect and analyse data
 
 ### Downloading data
 
@@ -251,7 +272,7 @@ See the [Data Analysis](data-cleaning) page for a description of the output form
 
 | Setting | Default | Notes |
 |---------|---------|-------|
-| `stimuli_dir` | `experiment/assets/stimuli` | Path to images, relative to project root |
+| `stimuli_dir` | `assets/stimuli` | Path to images, relative to your study directory |
 | `validation_trials` | *(list)* | Must have ≥ `n_validation_trials` entries |
 | `page_title` | `"Triadic Judgment Task"` | Browser tab title |
 | `response_mode` | `"button"` | `"button"` or `"keyboard"` |

@@ -1,7 +1,7 @@
-title: Triplet Experiment Template
+title: Triplet Collect
 description: >-
-  Template for triadic comparison experiments (triplet tasks) using jsPsych,
-  with automated setup and an R data-cleaning pipeline.
+  Software for running triadic comparison experiments (triplet tasks) using jsPsych
+  with automated setup.
 
 remote_theme: just-the-docs/just-the-docs
 

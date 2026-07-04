@@ -6,6 +6,23 @@ nav_order: 2
 
 # Installation & Prerequisites
 
+## How this repo works
+
+You install this repository **once** on your machine. It acts as the shared engine for all your triadic comparison experiments. Each individual study lives in its own subdirectory under `my_studies/` — you never need to re-install or duplicate the repo for a new study.
+
+```
+triplet_experiment_template/   ← install this once
+└── my_studies/
+    ├── study_A/               ← your first study
+    └── study_B/               ← your second study
+```
+
+The generator script reads a study's `experiment.yaml`, assembles the experiment files, and writes them into the study directory. See [How to Set Up a New Experiment](how-to-new-experiment) for the full walkthrough.
+
+---
+
+## Components
+
 This project has three independent components, each with its own dependencies. Install only what you need for the tasks you plan to do.
 
 | Component | What it does | Requires |

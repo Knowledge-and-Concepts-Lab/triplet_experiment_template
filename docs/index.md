@@ -6,7 +6,7 @@ nav_order: 1
 
 # Triplet Experiment Template
 
-A ready-to-use template for running **triadic comparison experiments** (triplet tasks) online using [jsPsych](https://www.jspsych.org/) v7, with an R-based data-cleaning pipeline.
+A ready-to-use template for running **triadic comparison experiments** (triplet tasks) online using [jsPsych](https://www.jspsych.org/) v7.
 
 Participants view three images — one target on top, two choices below — and select the choice most similar to the target. The template includes attention checks, validation trials, progress tracking, and automated data export.
 
@@ -38,8 +38,8 @@ Then open `http://localhost:8000`.
 | Guide | Description |
 |-------|-------------|
 | [Installation & Prerequisites](installation) | Software and dependencies needed to use this template |
-| [How to Set Up a New Experiment](how-to-new-experiment) | Step-by-step walkthrough — stimuli, config, deployment, data cleaning |
-| [Data Cleaning Reference](data-cleaning) | All R cleaning functions, the full pipeline, and the legacy converter |
+| [How to Set Up a New Experiment](how-to-new-experiment) | Step-by-step walkthrough — stimuli, config, deployment, and data collection |
+| [Data Analysis](data-cleaning) | Analysing data with the tripletTools R package |
 
 ---
 
@@ -58,11 +58,6 @@ Then open `http://localhost:8000`.
 ├── experiment.yaml        # ← Edit this to configure your experiment
 ├── scripts/
 │   └── generate_experiment.js  # Reads experiment.yaml, writes config.js + stimuli.js
-├── cleaning/              # R data-cleaning pipeline
-│   └── R/
-│       ├── clean_raw_data.R      # Command-line pipeline script
-│       ├── standardize_legacy.R  # Command-line legacy converter script
-│       └── functions.R           # Helper functions (also in tripletTools package)
 ├── tests/                 # JavaScript unit tests (vitest)
 └── docs/                  # This documentation site
 ```

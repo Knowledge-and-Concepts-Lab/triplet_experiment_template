@@ -13,9 +13,9 @@ This project has three independent components, each with its own dependencies. I
 | Experiment setup | Generates `config.js` and `stimuli.js` from `experiment.yaml` | Node.js |
 | Experiment preview | Serves the experiment locally for testing | Node.js or Python |
 | JavaScript tests | Runs the `utils.js` / `config.js` / `stimuli.js` unit tests | Node.js |
-| Data cleaning | Cleans raw participant data from jsPsych-Pipe | R |
-| R tests | Runs the cleaning pipeline unit tests | R |
 | Docs preview | Builds and serves this documentation site locally | Ruby |
+
+For data analysis, see the [tripletTools R package](https://knowledge-and-concepts-lab.github.io/tripletTools/index.html).
 
 ---
 
@@ -46,52 +46,11 @@ This installs `js-yaml` (used by the generator script) and `vitest` (used by the
 
 ---
 
-## R
-
-Required for: data cleaning (`cleaning/R/clean_raw_data.R`) and R tests.
-
-### Install R
-
-1. Go to [cran.r-project.org](https://cran.r-project.org) and click **Download R for Windows**.
-2. Click **base**, then download and run the installer, accepting all defaults.
-3. Verify in a new terminal:
-
-```bash
-Rscript --version   # should print R scripting front-end version 4.x.x
-```
-
-### Optional: RStudio
-
-[RStudio](https://posit.co/download/rstudio-desktop/) is a popular IDE for R. It is not required but makes running and editing R scripts easier.
-
-### Install R packages
-
-Open an R console (or run `Rscript` in your terminal) and install the required packages:
-
-```r
-install.packages(c("dplyr", "data.table", "stringr", "readr", "tidyr", "testthat"))
-```
-
-This only needs to be done once. Package installation may take a few minutes.
-
-### Install `tripletTools` (recommended)
-
-The cleaning functions are also available as an R package. If you have access to the `tripletTools` package, install it with `devtools`:
-
-```r
-install.packages("devtools")  # if not already installed
-devtools::install("path/to/tripletTools")
-```
-
-Once installed, all cleaning functions are available via `library(tripletTools)` without needing to source any scripts manually.
-
----
-
 ## Ruby
 
 Required for: previewing the documentation site locally.
 
-Not needed to run the experiment, clean data, or run tests — only install this if you want to work on the documentation.
+Not needed to run the experiment or run tests — only install this if you want to work on the documentation.
 
 ### Install
 

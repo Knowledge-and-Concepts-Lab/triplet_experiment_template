@@ -226,13 +226,13 @@ After deploying, give SONA the URL with the `%SURVEY_CODE%` placeholder appended
 
 Log in to your [jsPsych-Pipe](https://pipe.jspsych.org/) project to download individual CSV files, or use the Pipe API to batch-download them.
 
-### Cleaning data
+### Analysing data
 
-There are two ways to run the cleaning pipeline:
+To clean and analyse data collected with this template, use the **tripletTools** R package:
 
-**Option A — `tripletTools` package (recommended)**
+[tripletTools documentation](https://knowledge-and-concepts-lab.github.io/tripletTools/index.html){: .btn .btn-blue }
 
-If you have the `tripletTools` package installed, call `clean_triplet_data()` directly from R:
+The key function is `clean_triplet_data()`, which reads the raw CSVs, applies quality-control exclusions, and returns a model-ready dataset:
 
 ```r
 library(tripletTools)
@@ -243,17 +243,7 @@ result <- clean_triplet_data(
 )
 ```
 
-**Option B — command-line script**
-
-1. Install R dependencies:
-   ```r
-   install.packages(c("dplyr", "data.table", "stringr", "readr"))
-   ```
-2. Edit `cleaning/R/clean_raw_data.R` and set `data_dir`, `filename_df`, and `filename_level` to point to your downloaded data.
-3. Run:
-   ```bash
-   Rscript cleaning/R/clean_raw_data.R
-   ```
+See the [Data Analysis](data-cleaning) page for a description of the output format.
 
 ---
 

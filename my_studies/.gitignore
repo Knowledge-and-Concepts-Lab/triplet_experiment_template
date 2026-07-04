@@ -1,0 +1,5 @@
+# Study directories contain experiment configs, stimuli, and participant data.
+# These are intentionally excluded from the template repo.
+# If you need version control for a study, create a separate repository for it.
+*
+!.gitignore

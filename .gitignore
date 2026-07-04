@@ -22,7 +22,6 @@ Thumbs.db
 
 # Data (raw participant data should not be committed)
 *.csv
-!cleaning/tests/**/*.csv
 
 # Build output
 dist/

@@ -16,8 +16,8 @@ Data collected with this experiment template can be analysed using the **triplet
 
 | Function | Purpose |
 |----------|---------|
-| `clean_triplet_data()` | Reads raw jsPsych CSV exports, applies quality-control exclusions, and returns a model-ready dataset |
-| `clean_triadic_comparisons()` | Standardises legacy datasets from various column formats to the standard format |
+| `read_raw_data()` | Reads raw jsPsych CSV exports, applies quality-control exclusions, and returns a model-ready dataset |
+| `read_legacy()` | Standardises legacy datasets from various column formats to the standard format |
 | `filter_incomplete()` | Removes participants with too few trials |
 | `filter_fast_responders()` | Removes participants with suspiciously fast mean reaction times |
 | `filter_failed_catch()` | Removes participants who failed too many attention-check trials |

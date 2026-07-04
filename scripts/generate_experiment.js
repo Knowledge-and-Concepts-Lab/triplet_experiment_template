@@ -1,11 +1,21 @@
 #!/usr/bin/env node
 /**
- * Generates experiment/js/config.js and experiment/js/stimuli.js
- * from experiment.yaml.
+ * Generates config.js and stimuli.js from experiment.yaml.
  *
- * Usage:
+ * Built-in mode (generates into experiment/ inside this repo):
  *   node scripts/generate_experiment.js
  *   npm run setup
+ *
+ * External study mode (generates into a separate study directory):
+ *   node scripts/generate_experiment.js /path/to/my_study
+ *
+ * In external mode the study directory must contain experiment.yaml and
+ * your assets (stimuli, consent form).  The script copies index.html and
+ * js/utils.js from the template and writes config.js and stimuli.js into
+ * <study_dir>/js/.  The resulting folder is self-contained and ready to deploy.
+ *
+ * In experiment.yaml, stimuli_dir should be relative to the study directory,
+ * e.g. "assets/stimuli" rather than "experiment/assets/stimuli".
  */
 
 "use strict";
@@ -14,11 +24,27 @@ const fs   = require("fs");
 const path = require("path");
 const yaml = require("js-yaml");
 
-const PROJECT_ROOT   = path.resolve(__dirname, "..");
-const EXPERIMENT_DIR = path.join(PROJECT_ROOT, "experiment");
-const YAML_PATH      = path.join(PROJECT_ROOT, "experiment.yaml");
-const CONFIG_OUT     = path.join(EXPERIMENT_DIR, "js", "config.js");
-const STIMULI_OUT    = path.join(EXPERIMENT_DIR, "js", "stimuli.js");
+// ── Path setup ───────────────────────────────────────────────────────────────
+
+const PROJECT_ROOT  = path.resolve(__dirname, "..");
+const TEMPLATE_DIR  = path.join(PROJECT_ROOT, "experiment");
+
+// Optional CLI argument: path to an external study directory.
+const EXTERNAL_MODE = process.argv[2] != null;
+const STUDY_DIR     = EXTERNAL_MODE
+                      ? path.resolve(process.argv[2])
+                      : TEMPLATE_DIR;
+const YAML_PATH     = EXTERNAL_MODE
+                      ? path.join(STUDY_DIR, "experiment.yaml")
+                      : path.join(PROJECT_ROOT, "experiment.yaml");
+const CONFIG_OUT    = path.join(STUDY_DIR, "js", "config.js");
+const STIMULI_OUT   = path.join(STUDY_DIR, "js", "stimuli.js");
+
+// stimuli_dir in the YAML is resolved relative to YAML_BASE_DIR.
+// Image paths written into stimuli.js are relative to HTML_BASE_DIR
+// (the directory where index.html lives, so the browser can resolve them).
+const YAML_BASE_DIR = EXTERNAL_MODE ? STUDY_DIR : PROJECT_ROOT;
+const HTML_BASE_DIR = STUDY_DIR;
 
 const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".svg"]);
 
@@ -122,6 +148,10 @@ const SECTIONS = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 function main() {
+  if (EXTERNAL_MODE && !fs.existsSync(STUDY_DIR)) {
+    die("Study directory not found: " + STUDY_DIR);
+  }
+
   if (!fs.existsSync(YAML_PATH)) {
     die("experiment.yaml not found at: " + YAML_PATH);
   }
@@ -140,6 +170,17 @@ function main() {
   } else {
     validationTrials = generateValidationTrials(imagePaths, cfg.n_validation_trials);
     trialsSource = "randomly generated";
+  }
+
+  // In external mode, ensure js/ exists and copy shared template files.
+  if (EXTERNAL_MODE) {
+    var jsDir = path.join(STUDY_DIR, "js");
+    if (!fs.existsSync(jsDir)) fs.mkdirSync(jsDir, { recursive: true });
+    fs.copyFileSync(path.join(TEMPLATE_DIR, "index.html"),    path.join(STUDY_DIR,  "index.html"));
+    fs.copyFileSync(path.join(TEMPLATE_DIR, "js", "utils.js"), path.join(jsDir, "utils.js"));
+    console.log("Generating into: " + STUDY_DIR);
+    console.log("index.html copied from template");
+    console.log("js/utils.js copied from template");
   }
 
   writeConfigJs(cfg);
@@ -196,7 +237,7 @@ function validate(cfg) {
 // ── Stimuli directory scan ────────────────────────────────────────────────────
 
 function scanStimuliDir(stimuliDir) {
-  var absDir = path.resolve(PROJECT_ROOT, stimuliDir);
+  var absDir = path.resolve(YAML_BASE_DIR, stimuliDir);
   if (!fs.existsSync(absDir)) {
     die("stimuli_dir not found: " + absDir);
   }
@@ -211,10 +252,10 @@ function scanStimuliDir(stimuliDir) {
     die("stimuli_dir must contain at least 3 images; found " + files.length);
   }
 
-  // Produce paths relative to experiment/ (what index.html uses)
-  var relToExperiment = path.relative(EXPERIMENT_DIR, absDir).replace(/\\/g, "/");
+  // Produce paths relative to where index.html lives (what the browser uses).
+  var relToHtml = path.relative(HTML_BASE_DIR, absDir).replace(/\\/g, "/");
   return files.map(function(f) {
-    return relToExperiment + "/" + f;
+    return relToHtml + "/" + f;
   });
 }
 
